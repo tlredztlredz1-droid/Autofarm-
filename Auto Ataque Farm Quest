@@ -1,0 +1,151 @@
+-- Loop principal do Auto Farm
+spawn(function()
+    while wait() do
+        if _G.AutoFarm then
+            pcall(function()
+                local QuestTitle = game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Container.QuestTitle.Title.Text
+                CheckQuest()
+                
+                -- Verifica se a quest atual é a correta
+                if not string.find(QuestTitle, NameMon) then
+                    StartBring = false
+                    game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AbandonQuest")
+                end
+                
+                -- Se não tiver quest ativa
+                if game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible == false then
+                    StartBring = false
+                    
+                    -- Sistema de teleporte com bypass
+                    if BypassTP then
+                        if (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - CFrameQuest.Position).Magnitude > 1500 then
+                            TP1(CFrameQuest)
+                        elseif (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - CFrameQuest.Position).Magnitude < 1500 then
+                            TP1(CFrameQuest)
+                        end
+                    else
+                        TP1(CFrameQuest)
+                    end
+                    
+                    -- Inicia a quest quando chegar perto
+                    if (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - CFrameQuest.Position).Magnitude <= 20 then
+                        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", NameQuest, LevelQuest)
+                    end
+                    
+                -- Se tiver quest ativa
+                elseif game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible == true then
+                    
+                    -- Caso especial: "kissed Warrior"
+                    if string.find(game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Container.QuestTitle.Title.Text, "kissed") then
+                        for i, v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
+                            if string.find(v.Name, "kissed Warrior") then
+                                if v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
+                                    if string.find(game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Container.QuestTitle.Title.Text, NameMon) then
+                                        repeat task.wait()
+                                            EquipWeapon(_G.SelectWeapon)
+                                            PosMon = v.HumanoidRootPart.CFrame
+                                            topos(v.HumanoidRootPart.CFrame * CFrame.new(0, 30, 0))
+                                            v.HumanoidRootPart.CanCollide = false
+                                            v.Humanoid.WalkSpeed = 0
+                                            v.Head.CanCollide = false
+                                            MonFarm = v.Name
+                                            v.HumanoidRootPart.Size = Vector3.new(70, 70, 70)
+                                            StartBring = true
+                                            game:GetService('VirtualUser'):CaptureController()
+                                            game:GetService('VirtualUser'):Button1Down(Vector2.new(1280, 672))
+                                        until not _G.AutoFarm or v.Humanoid.Health <= 0 or not v.Parent or 
+                                              game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible == false
+                                    else
+                                        StartBring = false
+                                        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AbandonQuest")
+                                    end
+                                end
+                            elseif not string.find(v.Name, "kissed Warrior") then  -- Corrigido: added 'not'
+                                TP1(CFrameMon)
+                                StartBring = false
+                                if game:GetService("ReplicatedStorage"):FindFirstChild(Mon) then
+                                    TP1(game:GetService("ReplicatedStorage"):FindFirstChild(Mon).HumanoidRootPart.CFrame * CFrame.new(0, 20, 0))
+                                end
+                            end
+                        end
+                    
+                    -- Caso normal: monstros regulares
+                    else
+                        if game:GetService("Workspace").Enemies:FindFirstChild(Mon) then
+                            for i, v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
+                                if v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
+                                    if v.Name == Mon then
+                                        if string.find(game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Container.QuestTitle.Title.Text, NameMon) then
+                                            repeat task.wait()
+                                                EquipWeapon(_G.SelectWeapon)
+                                                AutoHaki()
+                                                PosMon = v.HumanoidRootPart.CFrame
+                                                topos(v.HumanoidRootPart.CFrame * CFrame.new(0, 30, 0))
+                                                v.HumanoidRootPart.CanCollide = false
+                                                v.Humanoid.WalkSpeed = 0
+                                                v.Head.CanCollide = false
+                                                v.HumanoidRootPart.Size = Vector3.new(70, 70, 70)
+                                                StartBring = true
+                                                MonFarm = v.Name
+                                                game:GetService('VirtualUser'):CaptureController()
+                                                game:GetService('VirtualUser'):Button1Down(Vector2.new(1280, 672))
+                                            until not _G.AutoFarm or v.Humanoid.Health <= 0 or not v.Parent or 
+                                                  game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible == false
+                                        else
+                                            StartBring = false
+                                            game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AbandonQuest")
+                                        end
+                                    end
+                                end
+                            end
+                        else
+                            TP1(CFrameMon)
+                            StartBring = false
+                            if game:GetService("ReplicatedStorage"):FindFirstChild(Mon) then
+                                TP1(game:GetService("ReplicatedStorage"):FindFirstChild(Mon).HumanoidRootPart.CFrame * CFrame.new(0, 20, 0))
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+-- 🔧 Função para pegar a ilha atual do jogador
+local function GetCurrentIsland()
+    local char = game.Players.LocalPlayer.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        local playerPos = char.HumanoidRootPart.Position
+        -- Detecta a ilha verificando regiões ou nome do mapa atual
+        for _, island in pairs(game:GetService("Workspace"):GetChildren()) do
+            if island:IsA("Model") and island:FindFirstChild("IslandRegion") then
+                local region = island.IslandRegion
+                if region:IsA("BasePart") then
+                    local size = region.Size / 2
+                    local pos = region.Position
+                    if math.abs(playerPos.X - pos.X) <= size.X and
+                       math.abs(playerPos.Z - pos.Z) <= size.Z then
+                        return island.Name
+                    end
+                end
+            end
+        end
+    end
+    return nil
+end
+
+-- 🔧 Função para verificar se o inimigo está na mesma ilha do jogador
+local function IsEnemyOnSameIsland(enemyRootPart)
+    local char = game.Players.LocalPlayer.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return false end
+
+    local playerPos = char.HumanoidRootPart.Position
+    local enemyPos = enemyRootPart.Position
+
+    -- ✅ Define o raio máximo permitido (ajuste conforme o tamanho da ilha)
+    local MAX_ISLAND_RADIUS = 1000 -- distância máxima em studs
+
+    local distance = (playerPos - enemyPos).Magnitude
+    return distance <= MAX_ISLAND_RADIUS
+end
