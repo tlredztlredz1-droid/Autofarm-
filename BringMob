@@ -1,0 +1,85 @@
+-- Função helper para definir posição e nome do monstro
+getgenv().BringMobs = function(F, z)
+    PosMon = F
+    NameMon = z
+end
+
+-- Compatibilidade com syn/executor sem isnetworkowner
+if not syn then
+    isnetworkowner = function() return true end
+end
+
+PosY = 35
+
+-- Loop principal unificado
+task.spawn(function()
+    local Players     = game:GetService("Players")
+    local Workspace   = game:GetService("Workspace")
+    local LocalPlayer = Players.LocalPlayer
+
+    while task.wait(0.1) do
+        pcall(function()
+            -- Garante que o personagem existe
+            local Char = LocalPlayer.Character
+            if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
+            local PlayerHRP = Char.HumanoidRootPart
+
+            -- Verifica se o BringMob está ativo e há posição definida
+            if not (_G.BringMonster or _G.BringMob) then return end
+            if not PosMon then return end
+            if not Workspace:FindFirstChild("Enemies") then return end
+
+            CheckQuest()
+
+            for _, v in ipairs(Workspace.Enemies:GetChildren()) do
+                local hrp      = v:FindFirstChild("HumanoidRootPart")
+                local hum      = v:FindFirstChild("Humanoid")
+                local head     = v:FindFirstChild("Head")
+
+                -- Validações básicas
+                if not (hrp and hum and head) then continue end
+                if hum.Health <= 0 then continue end
+
+                -- Verifica nome (aceita MonFarm, Mon ou NameMon)
+                local validName = (v.Name == (MonFarm or ""))
+                               or (v.Name == (Mon or ""))
+                               or (v.Name == (NameMon or ""))
+
+                -- Exclui bosses que não devem ser trazidos
+                local excluded = (v.Name == "Ice Admiral")
+                              or (v.Name == "Don Swan")
+                              or (v.Name == "Saber Expert")
+                              or (v.Name == "Longma")
+
+                if not validName or excluded then continue end
+
+                -- Verifica distância do player
+                local distPlayer = (hrp.Position - PlayerHRP.Position).Magnitude
+                if distPlayer > 350 then continue end
+
+                -- Verifica network ownership
+                if not isnetworkowner(hrp) then continue end
+
+                --  Aplica o Bring
+                hrp.CFrame      = PosMon
+                hrp.CanCollide  = false
+                hrp.Size        = Vector3.new(60, 60, 60)
+                head.CanCollide = false
+
+                hum.WalkSpeed   = 0
+                hum.JumpPower   = 0
+                hum:ChangeState(11)  -- Freeze state
+                hum:ChangeState(14)
+
+                -- Remove Animator para impedir que o mob se mova
+                local Animator = hum:FindFirstChild("Animator")
+                if Animator then
+                    pcall(function() Animator:Destroy() end)
+                end
+
+                -- Expande SimulationRadius para manter controle do mob
+                sethiddenproperty(LocalPlayer, "SimulationRadius", math.huge)
+            end
+        end)
+    end
+end)
