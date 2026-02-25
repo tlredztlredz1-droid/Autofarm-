@@ -1,0 +1,26 @@
+task.spawn(function()
+    while task.wait() do
+        if _G.FarmChest then
+            pcall(function()
+                local Player    = game:GetService("Players").LocalPlayer
+                local Character = Player.Character or Player.CharacterAdded:Wait()
+                local Position  = Character:GetPivot().Position
+
+                local Chests    = game:GetService("CollectionService"):GetTagged("_ChestTagged")
+                local Distance, Nearest = math.huge, nil
+
+                for _, Chest in ipairs(Chests) do
+                    local Magnitude = (Chest:GetPivot().Position - Position).Magnitude
+                    if not Chest:GetAttribute("IsDisabled") and Magnitude < Distance then
+                        Distance = Magnitude
+                        Nearest  = Chest
+                    end
+                end
+
+                if Nearest then
+                    topos(CFrame.new(Nearest:GetPivot().Position))
+                end
+            end)
+        end
+    end
+end)
