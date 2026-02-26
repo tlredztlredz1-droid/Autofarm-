@@ -1956,23 +1956,7 @@ function CheckNearestTeleporter(aI)
 
     local TableLocations = {}
 
-    if y == 2753915549 then
-        TableLocations = {
-            ["Sky3"] = Vector3.new(-7894, 5547, -380),
-            ["Sky3Exit"] = Vector3.new(-4607, 874, -1667),
-            ["UnderWater"] = Vector3.new(61163, 11, 1819),
-            ["Underwater City"] = Vector3.new(61165.19140625, 0.18704631924629211, 1897.379150390625),
-            ["Pirate Village"] = Vector3.new(-1242.4625244140625, 4.787059783935547, 3901.282958984375),
-            ["UnderwaterExit"] = Vector3.new(4050, -1, -1814)
-        }
-    elseif y == 4442272183 then
-        TableLocations = {
-            ["Swan Mansion"] = Vector3.new(-390, 332, 673),
-            ["Swan Room"] = Vector3.new(2285, 15, 905),
-            ["Cursed Ship"] = Vector3.new(923, 126, 32852),
-            ["Zombie Island"] = Vector3.new(-6509, 83, -133)
-        }
-    elseif y == 7449423635 then
+    if y == 100117331123089 or game.PlaceId == 7449423635 then 
         TableLocations = {
             ["Floating Turtle"] = Vector3.new(-12462, 375, -7552),
             ["Hydra Island"] = Vector3.new(5657.88623046875, 1013.0790405273438, -335.4996337890625),
