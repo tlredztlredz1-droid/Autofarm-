@@ -1,4 +1,4 @@
-if game.PlaceId == 2753915549 then
+if game.PlaceId == 85211729168715 or game.PlaceId == 2753915549 then then
     World1 = true
     
     else
